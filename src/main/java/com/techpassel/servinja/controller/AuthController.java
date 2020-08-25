@@ -147,4 +147,5 @@ public class AuthController {
             return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
         }
     }
+
 }
