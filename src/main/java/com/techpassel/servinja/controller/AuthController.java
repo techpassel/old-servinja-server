@@ -1,10 +1,10 @@
 package com.techpassel.servinja.controller;
 
-import com.techpassel.servinja.model.AuthUserDetails;
-import com.techpassel.servinja.model.TempUser;
-import com.techpassel.servinja.model.User;
+import com.techpassel.servinja.model.*;
+import com.techpassel.servinja.repository.CustomerRepo;
 import com.techpassel.servinja.repository.TempUserRepo;
 import com.techpassel.servinja.repository.UserRepo;
+import com.techpassel.servinja.repository.VerificationTokenRepo;
 import com.techpassel.servinja.service.AuthService;
 import com.techpassel.servinja.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +27,12 @@ public class AuthController {
 
     @Autowired
     TempUserRepo tempUserRepo;
+
+    @Autowired
+    CustomerRepo customerRepo;
+
+    @Autowired
+    VerificationTokenRepo verificationTokenRepo;
 
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -55,15 +61,14 @@ public class AuthController {
             }
 
             if (responseMsg == null) {
-                LocalDateTime dt = LocalDateTime.now();
                 tempUserRepo.deleteAllByEmailAndPhone(user.getEmail(), user.getPhone());
                 user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-                //This is not a JWT token which we use for user authorization and authentication purpose for http request
-                //This is a token which we uses to identify temp users in email verification
-                String token = authService.generateToken();
-                user.setToken(token);
-                user.setUpdatedAt(dt);
                 TempUser u = tempUserRepo.save(user);
+
+                LocalDateTime dt = LocalDateTime.now();
+                String token = authService.generateToken();
+                VerificationToken v = new VerificationToken(u.getId(), token, VerificationToken.Types.EmailVerificationToken, dt);
+                verificationTokenRepo.save(v);
                 responseMsg = "success";
                 authService.sendVerificationEmail(user.getEmail(), token);
             }
@@ -77,30 +82,34 @@ public class AuthController {
     @PostMapping("verify-email")
     public ResponseEntity<?> verifyEmail(@RequestBody String token) {
         try {
-            String responseMsg;
-            Optional<TempUser> tempUser = tempUserRepo.findByToken(token);
-            if (tempUser.isPresent()) {
-                TempUser tUser = tempUser.get();
-                LocalDateTime tokenGenerationTime = tUser.getUpdatedAt();
+            String responseMsg = "invalid";
+            Optional<VerificationToken> verificationToken = verificationTokenRepo.findByToken(token);
+            if (verificationToken.isPresent()) {
+                VerificationToken vt = verificationToken.get();
+                LocalDateTime tokenGenerationTime = vt.getGeneratedAt();
                 LocalDateTime oneDayAgoTime = LocalDateTime.now().minusDays(1);
                 boolean isBefore = oneDayAgoTime.isBefore(tokenGenerationTime);
-                if(isBefore) {
-                    User u1 = new User();
-                    u1.setFirstName(tUser.getFirstName());
-                    u1.setLastName(tUser.getLastName());
-                    u1.setEmail(tUser.getEmail());
-                    u1.setActive(tUser.isActive());
-                    u1.setPhone(tUser.getPhone());
-                    u1.setPassword(tUser.getPassword());
-                    u1.setRoles(tUser.getRoles());
-                    userRepo.save(u1);
-                    tempUserRepo.deleteAllByEmailAndPhone(tUser.getEmail(), tUser.getPhone());
-                    responseMsg = "success";
+                if (isBefore) {
+                    Optional<TempUser> tempUser = tempUserRepo.findById(vt.getUserId());
+                    if (tempUser.isPresent()) {
+                        TempUser tUser = tempUser.get();
+                        User u1 = new User();
+                        u1.setEmail(tUser.getEmail());
+                        u1.setActive(true);
+                        u1.setPhone(tUser.getPhone());
+                        u1.setPassword(tUser.getPassword());
+                        u1.setRoles(tUser.getRoles());
+                        userRepo.save(u1);
+                        verificationTokenRepo.deleteByUserIdAndType(vt.getUserId(), VerificationToken.Types.EmailVerificationToken);
+                        tempUserRepo.deleteAllByEmailAndPhone(tUser.getEmail(), tUser.getPhone());
+                        Customer customer = new Customer(tUser.getFirstName(), tUser.getLastName());
+                        customer.setUser(u1);
+                        customerRepo.save(customer);
+                        responseMsg = "success";
+                    }
                 } else {
                     responseMsg = "expire";
                 }
-            } else {
-                responseMsg = "invalid";
             }
             return new ResponseEntity<String>(responseMsg, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -115,19 +124,20 @@ public class AuthController {
             String username = user.get("username");
             String password = user.get("password");
             Optional<User> userData = userRepo.findByEmailOrPhone(username);
-            String onboardingStage = "1";
-            // Zero mean completed or not required.We will set onboarding stages for customer only.
-            // For admin and staff it should be zero now.But later we can add onboarding stages for staffs also.
-            HashMap<String, String> res= new HashMap<String, String >();
+            int onboardingStage = 0;
+            HashMap<String, Object> res = new HashMap<>();
             if (userData.isPresent()) {
                 User uData = userData.get();
                 boolean passwordMatches = bCryptPasswordEncoder.matches(password, uData.getPassword());
                 if (passwordMatches) {
+                    Optional<Customer> customer = customerRepo.findByUserId(uData.getId());
+                    if (customer.isPresent()) {
+                        onboardingStage = customer.get().getOnboardingStage();
+                    }
                     res.put("type", "success");
                     AuthUserDetails authUser = new AuthUserDetails(uData);
                     res.put("token", jwtUtil.generateToken(authUser));
                     res.put("roles", (uData.getRoles()));
-                    //Condition for Customer onboardingStage is yet to be completed.
                     res.put("onboardingStage", onboardingStage);
                 } else {
                     res.put("type", "incorrectPassword");
@@ -137,7 +147,7 @@ public class AuthController {
                 if (tempUser.isPresent()) {
                     res.put("type", "userNotVerified");
                 } else {
-                    res.put("type","invalidUser");
+                    res.put("type", "invalidUser");
                 }
             }
             System.out.println(res);
@@ -147,5 +157,4 @@ public class AuthController {
             return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
         }
     }
-
 }

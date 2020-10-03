@@ -13,6 +13,7 @@ public class AuthUserDetails implements UserDetails {
 
     private String userName;
     private String password;
+    private int userId;
     private boolean active;
     private List<GrantedAuthority> authorities;
 
@@ -20,6 +21,7 @@ public class AuthUserDetails implements UserDetails {
         this.userName = user.getEmail();
         this.password = user.getPassword();
         this.active = user.isActive();
+        this.userId = user.getId();
         this.authorities = Arrays.stream(user.getRoles().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
@@ -38,6 +40,8 @@ public class AuthUserDetails implements UserDetails {
     public String getUsername() {
         return userName;
     }
+
+    public int getUserId(){ return userId; }
 
     @Override
     public boolean isAccountNonExpired() {

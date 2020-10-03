@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.Random;
 
 @Service
@@ -28,9 +27,8 @@ public class AuthService {
         String content = "<h1>Welcome to "+appName+"</h1><br><br><p>To complete your "+appName+" sign up, we just need to verify your email address. Please click on the button below to verify your email" +
                 "</p><br><a href="+ baseUrl + "><button style=" + style + ">Verify email address</button></a>";
         boolean isEmailSent = emailService.sendEmailWithAttachment(email, sub, content);
-        //Retrying to send email if failed in previous attempt
+        //Retrying to send email again after 2 minutes if failed in previous attempt
         if (!isEmailSent) {
-            //Code to make current thread sleep for 2 minutes.
             Thread.sleep(120000);
             emailService.sendEmailWithAttachment(email, sub, content);
         }

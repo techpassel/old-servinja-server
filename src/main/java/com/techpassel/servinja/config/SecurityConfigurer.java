@@ -54,7 +54,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .antMatchers("/admin/**").hasAnyAuthority("staff", "admin")
                 .anyRequest().authenticated() //Validate all other requests
                 .and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Here we are asking spring security not to manage session.
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        //Here we are asking spring security not to manage session.
         //Since we have asked spring security not to manage state.So now we need something which will validate each request and sets up security context.
         //So following code is doing the same.
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

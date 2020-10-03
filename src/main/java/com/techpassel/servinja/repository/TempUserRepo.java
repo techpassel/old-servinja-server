@@ -16,7 +16,6 @@ public interface TempUserRepo extends JpaRepository<TempUser, Integer> {
     Optional<TempUser> findByPhone(String phone);
     void deleteAllByEmail(String email);
     void deleteAllByPhone(String phone);
-    Optional<TempUser> findByToken(String token);
 
     @Query("from TempUser where email=?1 or phone=?1")
     Optional<TempUser> findByEmailOrPhone(String username);
