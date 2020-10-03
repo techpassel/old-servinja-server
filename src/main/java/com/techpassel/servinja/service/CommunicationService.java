@@ -3,16 +3,21 @@ package com.techpassel.servinja.service;
 import com.techpassel.servinja.model.SmsDetails;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class CommunicationService {
+
+    @Value("${twilio.default_number}")
+    String TWILIO_NUMBER;
+
     public List sendSms(SmsDetails smsDetails){
             String message = smsDetails.getMessage();
             List<String> phoneNumbers = smsDetails.getPhoneNumbers();
-            PhoneNumber senderNumber = new PhoneNumber("+14804050046");
+            PhoneNumber senderNumber = new PhoneNumber(TWILIO_NUMBER);
             List<HashMap<String, Object>> results = new ArrayList<>();
             ListIterator ltr = phoneNumbers.listIterator();
             if(ltr.hasNext()){
