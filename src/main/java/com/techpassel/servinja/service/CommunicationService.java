@@ -1,18 +1,36 @@
 package com.techpassel.servinja.service;
 
 import com.techpassel.servinja.model.SmsDetails;
+import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Service
 public class CommunicationService {
 
+    @Value("${twilio.account_sid}")
+    String ACCOUNT_SID;
+
+    @Value("${twilio.auth_token}")
+    String AUTH_TOKEN;
+
     @Value("${twilio.default_number}")
     String TWILIO_NUMBER;
+
+    @PostConstruct
+    private void initializeAmazon() {
+        try {
+            Twilio.init(ACCOUNT_SID,AUTH_TOKEN);
+            System.out.println("Successfully connected to twilio");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     public List sendSms(SmsDetails smsDetails){
             String message = smsDetails.getMessage();

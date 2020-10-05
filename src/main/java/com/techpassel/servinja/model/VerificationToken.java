@@ -14,7 +14,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "verification_token")
 public class VerificationToken {
-    public static enum Types {EmailVerificationToken, PhoneVerificationToken, EmailUpdationToken}
+    public static enum Types {
+        EmailVerificationToken,
+        PhoneVerificationToken,
+        EmailUpdationToken
+    }
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;

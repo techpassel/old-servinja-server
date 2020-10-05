@@ -8,7 +8,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
@@ -47,11 +46,9 @@ public class Customer {
     @Column(name = "gender")
     private String gender;
 
-    @Column(name = "doc_location")
-    private String docLocation;
-
-    @Column(name = "is_doc_verified")
-    private boolean isDocVerified;
+    @Column(name = "docs_verified")
+    private boolean docsVerified;
+    //Set true when all required documents are verified.
 
     @Column(name = "is_email_verified")
     private boolean isEmailVerified;
@@ -67,10 +64,6 @@ public class Customer {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    //As address will be there for any type of users so added it here instead of Customer entity.
-//    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="user")
-//    List<Address> address;
-
     public Customer(@Size(max = 25) @NotNull String firstName, @Size(max = 25) @NotNull String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -79,6 +72,6 @@ public class Customer {
         // Making isEmailVerified = true as new customer will be created after email verification only.
         this.isEmailVerified = true;
         this.isPhoneVerified = false;
-        this.isDocVerified = false;
+        this.docsVerified = false;
     }
 }
