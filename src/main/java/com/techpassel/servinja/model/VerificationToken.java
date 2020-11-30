@@ -17,7 +17,8 @@ public class VerificationToken {
     public static enum Types {
         EmailVerificationToken,
         PhoneVerificationToken,
-        EmailUpdationToken
+        EmailUpdationToken,
+        ChangePasswordToken
     }
     
     @Id

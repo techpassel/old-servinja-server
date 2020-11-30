@@ -11,7 +11,7 @@ import java.util.Optional;
 @Service
 public class OnboardingService {
 
-    @Value("${totalOnboardingStage}")
+    @Value("${techpassel.app.totalOnboardingStage}")
     public int totalOnboardingStage;
 
     @Autowired

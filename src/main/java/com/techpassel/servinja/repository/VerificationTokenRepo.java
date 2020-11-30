@@ -14,9 +14,14 @@ public interface VerificationTokenRepo extends JpaRepository<VerificationToken, 
     @Query("from VerificationToken where token=?1 and userId=?2")
     Optional<VerificationToken> findByTokenAndUserId(String token, int userId);
 
+    @Transactional
+    void deleteByUserId(int userId);
+
     //@Transactional And @Modifying annotations are required if you want to update value.
     @Transactional
     @Modifying
     @Query("delete from VerificationToken v where v.userId=?1 and v.type=?2")
     void deleteByUserIdAndType(int userId, VerificationToken.Types type);
+
+
 }

@@ -38,10 +38,13 @@ public class OnboardingController {
     @Autowired
     OnboardingService onboardingService;
 
+    // Used when request is sent in "get-reset-password-token-details/xxxyyyzzz" format
+    //@RequestMapping(value = "get-user-details/{userId}", method = RequestMethod.GET)
+    //Or
+    //@GetMapping("get-user-details/{userId}")
+    //public ResponseEntity<?> getUserDetails(@PathVariable("userId") String userId) {
     @RequestMapping(value = "get-customer-details", method = RequestMethod.GET)
     public ResponseEntity<?> getCustomerDetails(@RequestParam("userId") String userId) {
-        //@RequestMapping(value = "get-user-details/{userId}", method = RequestMethod.GET)
-        //public ResponseEntity<?> getUserDetails(@PathVariable("userId") String userId) {
         try {
             int id = Integer.parseInt(userId);
             Optional<Customer> customerIfExist = customerRepo.findByUserId(id);
@@ -116,6 +119,7 @@ public class OnboardingController {
             if (responseType == "success") {
                 LocalDateTime l = LocalDateTime.now();
                 String token = smsResponse.get("token").toString();
+                this.verificationTokenRepo.deleteByUserIdAndType(userId, VerificationToken.Types.PhoneVerificationToken);
                 VerificationToken v = new VerificationToken(userId, token, VerificationToken.Types.PhoneVerificationToken, l);
                 this.verificationTokenRepo.save(v);
             }
