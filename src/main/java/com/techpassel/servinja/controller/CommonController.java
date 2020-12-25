@@ -124,4 +124,25 @@ public class CommonController {
             return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
         }
     }
+
+    @RequestMapping(value = "get-user-name-gender/{userId}", method = RequestMethod.GET)
+    public ResponseEntity<?> getUserNameGender(@PathVariable("userId") int userId){
+        try{
+            HashMap<String, Object> h = new HashMap<>();
+            Optional<Customer> customerIfExist = customerRepo.findByUserId(userId);
+            if(customerIfExist.isPresent()){
+                Customer customer = customerIfExist.get();
+                h.put("type", "success");
+                h.put("firstName", customer.getFirstName());
+                h.put("lastName", customer.getLastName());
+                h.put("gender", customer.getGender());
+            } else {
+                h.put("type","userNotFound");
+            }
+            return new ResponseEntity<>(h, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
+        }
+    }
 }
