@@ -20,4 +20,6 @@ public class ServinjaServerApplication {
 		SpringApplication.run(ServinjaServerApplication.class, args);
 	}
 
+
+
 }

@@ -14,15 +14,14 @@ public class EmailService {
     @Autowired
     JavaMailSender mailSender;
 
-    @Value("${techpassel.app.name}")
+    @Value("${mail.sender}")
     String sender;
-
     public boolean sendEmailWithAttachment(String email,String subject,String content){
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
             mimeMessageHelper.setSubject(subject);
-            mimeMessageHelper.setFrom("Servinja");
+            mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setTo(email);
             mimeMessageHelper.setText(content, true);
             //Second parameter to is set content type as HTML and not plain text.

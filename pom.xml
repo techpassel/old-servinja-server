@@ -40,7 +40,8 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<optional>true</optional>
+			<version>1.18.16</version>
+			<scope>provided</scope>
 		</dependency>
 		<!-- Used for validation purpose and for using various attributes in model like @NotNull, @Size etc -->
 		<dependency>
@@ -70,6 +71,16 @@
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>7.50.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>1.11.133</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
